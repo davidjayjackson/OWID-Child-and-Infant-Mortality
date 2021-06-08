@@ -1,0 +1,44 @@
+---
+title: "Child and Infant Mortality Rates"
+author: "David Jackson"
+date: "6/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidyr)
+library(forecast)
+library(dlookr)
+library(flextable)
+```
+
+## Child and Infant Mortality
+
+"In this entry we are giving an overview of the mortality of infants and children. In demography, *child mortality* refers to the death of children *under the age of five* while **infant mortality** refers to the death of those **under the age of one.**" (https://ourworldindata.org/child-mortality)
+
+
+
+```{r cars}
+# Mortality rate, under-5 (per 1,000 live births)
+mortality_rates <- read.csv("./DATA/child-mortality-igme.csv")
+colnames(mortality_rates) <- c("Country","Code","Year","Rate")
+mortality_rates %>% select(Rate) %>% diagnose_numeric() %>% flextable()
+```
+```{r}
+average_rate <- mortality_rates %>% group_by(Year) %>%
+  summarise(Mean = mean(Rate),
+            Median = median(Rate))
+ggplot(average_rate) + geom_line(aes(x=Year,y=Mean),lwd=1) +
+  labs(title = "Mean Infant/Child Mortality Rate per Year",
+       y="Mean Mortality rate (per 1,000 live births)",subtitle = "(Under Age 5)")
+```
+
+```{r}
+child_deaths <- read.csv("./DATA/child-deaths-igme-data.csv")
+child_deaths %>% select(Under.five.deaths) %>% diagnose_numeric() %>% flextable()
+```
+
