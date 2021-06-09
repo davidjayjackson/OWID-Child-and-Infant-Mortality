@@ -18,12 +18,13 @@ library(flextable)
 
 ## Child and Infant Mortality
 
-"In this entry we are giving an overview of the mortality of infants and children. In demography, *child mortality* refers to the death of children *under the age of five* while **infant mortality** refers to the death of those **under the age of one.**" (https://ourworldindata.org/child-mortality)
+"In this entry we are giving an overview of the mortality of infants and children. In demography, **child mortality** refers to the death of children **under the age of five** while **infant mortality** refers to the death of those **under the age of one.**" (https://ourworldindata.org/child-mortality)
 
 
 
 ```{r cars}
-# Mortality rate, under-5 (per 1,000 live births)
+rm(list=ls())
+# Mortality rate, under- Agr 5 (per 1,000 live births)
 mortality_rates <- read.csv("./DATA/child-mortality-igme.csv")
 colnames(mortality_rates) <- c("Country","Code","Year","Rate")
 mortality_rates %>% select(Rate) %>% diagnose_numeric() %>% flextable()
@@ -36,6 +37,34 @@ ggplot(average_rate) + geom_line(aes(x=Year,y=Mean),lwd=1) +
   labs(title = "Mean Infant/Child Mortality Rate per Year",
        y="Mean Mortality rate (per 1,000 live births)",subtitle = "(Under Age 5)")
 ```
+
+### Ranking coutries by increase or decrease in Mortality
+
+```{r}
+change_rate <- mortality_rates %>% group_by(Country) %>%
+  summarise( ROC = first(Rate)/last(Rate))
+
+change_rate %>% top_n(10) %>%
+  ggplot() + geom_col(aes(x=reorder(Country,ROC),y=ROC)) + 
+  coord_flip() + labs(title = "10 Countreis with the Biggest Change in Mortaility Rate: 1960 - 2017")
+
+change_rate %>% top_n(10) %>% left_join(mortality_rates) %>%
+  ggplot() + geom_line(aes(x=Year,y=Rate,col=Country))
+  
+
+```
+
+
+
+```{r}
+change_rate %>% top_n(-10) %>%
+  ggplot() + geom_col(aes(x=reorder(Country,ROC),y=ROC)) + 
+  coord_flip() + labs(title = "10 Countreis with the Lowest Change in Mortaility Rate: 1960 - 2017")
+
+change_rate %>% top_n(-10) %>% left_join(mortality_rates) %>%
+  ggplot() + geom_line(aes(x=Year,y=Rate,col=Country))
+```
+
 
 ```{r}
 child_deaths <- read.csv("./DATA/child-deaths-igme-data.csv")
